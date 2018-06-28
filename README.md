@@ -1,5 +1,5 @@
 # predictivoAPI-python
 
-## Installing
+## Install
 
 pip install git+https://github.com/n3rio/predictivoAPI-python.git
