@@ -8,16 +8,16 @@ class Client(object):
     def __init__(self, host=None, access_token=None):
         if access_token and host:
             self.access_token = access_token
-            self.base_url = host
+            self.base_url = host[:-1] if host[:-1] == '/' else host
         else:
             raise exception.CredentialRequired("You must provide either access_token and hostname")
 
-    def _get(self, endpoint, auth):
-        response = requests.get(self.base_url + endpoint, auth=auth)
+    def _get(self, endpoint):
+        response = requests.get(self.base_url + endpoint)
         return self._parse(response).json()
 
-    def _post(self, endpoint, auth, data):
-        response = requests.post(self.base_url + endpoint, auth=auth, json=data)
+    def _post(self, endpoint, data):
+        response = requests.post(self.base_url + endpoint, json=data)
         return self._parse(response).json()
 
     def _parse(self, response):
@@ -57,7 +57,10 @@ class Client(object):
             return response
 
     def _request(self, method, endpoint, params=None, data=None):
-        headers = {'Authorization': 'Basic {}'.format(self.creds)}
+        headers = {
+            'Authorization': 'Basic {}'.format(self.creds),
+            'Content-Type': 'application/json'
+        }
         try:
             url = self.base_url + endpoint
             response = requests.request(method=method, url=url, params=params, data=data, headers=headers)
@@ -67,17 +70,49 @@ class Client(object):
             return False
 
     def describe_sugarcontacts(self):
-        endpoint = ''
+        endpoint = '/sugarcontacts/describe'
         return self._request('GET', endpoint)
 
     def describe_agenda(self):
-        endpoint = ''
+        endpoint = '/agenda/describe'
         return self._request('GET', endpoint)
 
-    def insert_sugarcontacts(self):
-        endpoint = ''
-        return self._request('POST', endpoint)
+    def create_agenda(self, id_call, status, date_start, date_exec, assigned_user_id, parent_id, parent_type,
+                      first_name,
+                      last_name, phone, prioridad_c):
+        endpoint = '/agenda/crearAgenda'
+        body = {
+            "idcall": id_call,
+            "status": status,
+            "date_start": date_start,
+            "date_exec": date_exec,
+            "assigned_user_id": assigned_user_id,
+            "parent_id": parent_id,
+            "Parent_type": parent_type,
+            "first_name": first_name,
+            "last_name": last_name,
+            "phone": phone,
+            "prioridad_c": prioridad_c
+        }
+        return self._request('POST', endpoint, body)
 
-    def insert_agenda(self):
-        endpoint = ''
-        return self._request('POST', endpoint)
+    def create_contact(self, _id, status, date_entered, date_modified, first_name, last_name, phone_mobile, limpio,
+                       id_tipo, ejecutada, intentos, assigned_user_id, id_call, tipo_contac):
+        endpoint = '/contacto/crearContacto'
+        body = {
+            "id": _id,
+            "status": status,
+            "date_entered": date_entered,
+            "date_modified": date_modified,
+            "first_name": first_name,
+            "last_name": last_name,
+            "phone_mobile": phone_mobile,
+            "Limpio": limpio,
+            "Ejecutada": ejecutada,
+            "IdTipo": id_tipo,
+            "Intentos": intentos,
+            "assigned_user_id": assigned_user_id,
+            "idcall": id_call,
+            "TipoContac": tipo_contac
+        }
+        return self._request('POST', endpoint, body)
